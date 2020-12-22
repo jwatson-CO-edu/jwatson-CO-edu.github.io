@@ -1,1 +1,6 @@
+##### Global Settings #####
 theme: jekyll-theme-midnight
+
+##### Sidebar? #####
+author:
+  name: "Your Sidebar Name"
