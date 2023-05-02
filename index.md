@@ -1,4 +1,4 @@
 # Past & Future Work
 ## University of Colorado Boulder
-# Restore Project
+### Restore Project
 ## University of Utah
