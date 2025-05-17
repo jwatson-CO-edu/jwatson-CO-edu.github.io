@@ -1,19 +1,19 @@
 <!DOCTYPE html>
+<!-- Based On: https://claude.ai/public/artifacts/cdf70aed-684f-4074-bc4e-228d92665f3a -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Portfolio</title>
+    <title>James Watson - Professional Profile</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
-            --background-color: #f8f9fa;
+            --background-color: #c0dfff;
             --text-color: #333;
             --card-background: #fff;
             --hover-color: #2980b9;
-            --margin-width: 120px; /* Width of the side canvases */
         }
 
         * {
@@ -27,32 +27,12 @@
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
-            padding-left: var(--margin-width);
-            padding-right: var(--margin-width);
-            position: relative;
-        }
-
-        #left-canvas, #right-canvas {
-            position: fixed;
-            top: 0;
-            height: 100vh;
-            width: var(--margin-width);
-            z-index: 1000;
-        }
-
-        #left-canvas {
-            left: 0;
-        }
-
-        #right-canvas {
-            right: 0;
         }
 
         header {
             background-color: var(--secondary-color);
             color: white;
-            padding-left: var(--margin-width);
-            padding-right: var(--margin-width);
+            padding: 2rem 0;
             text-align: center;
             position: relative;
         }
@@ -89,10 +69,9 @@
         }
 
         main {
-            /* padding-left: var(--margin-width);
-            padding-right: var(--margin-width); */
-            padding-left: 0;
-            padding-right: 0;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
         }
 
         section {
@@ -116,11 +95,9 @@
         }
 
         #threejs-container {
-            width: 150px;
-            height: 150px;
-            margin: auto auto 1rem;
-            display: center;
-            /* margin: 0 auto; */
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
         }
 
         .profile-info {
@@ -256,22 +233,10 @@
             .project-grid {
                 grid-template-columns: 1fr;
             }
-            
-            body {
-                padding-left: 40px;
-                padding-right: 40px;
-            }
-            
-            #left-canvas, #right-canvas {
-                width: 40px;
-            }
         }
     </style>
 </head>
 <body>
-    <canvas id="left-canvas"></canvas>
-    <canvas id="right-canvas"></canvas>
-    
     <header>
         <div id="threejs-container"></div>
         <div class="profile-info">
@@ -419,14 +384,14 @@
             
             // Create renderer
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-            renderer.setSize(200, 200);
+            renderer.setSize(100, 100);
             renderer.setClearColor(0x000000, 0);
             
             // Add renderer to DOM
             document.getElementById('threejs-container').appendChild(renderer.domElement);
             
             // Create cube
-            const geometry = new THREE.BoxGeometry(1.25, 1.25, 1.25);
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
             const material = new THREE.MeshBasicMaterial({ 
                 color: 0x3498db,
                 wireframe: true
@@ -448,194 +413,9 @@
             // Render scene
             renderer.render(scene, camera);
         }
-
-        class Particle{
-            // A little guy that lives in the margins
-            constructor( canvasName ){
-                // Init particle with random size, color, position, and velocity
-                this.cnvs = document.getElementById( canvasName );
-                this.posn = [Math.random() * this.cnvs.width, Math.random() * this.cnvs.height,];
-                this.velo = [Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25,];
-                this.size = Math.random() * 4 + 2;
-                this.colr = `rgba(52, 152, 219, ${Math.random() * 0.7 + 0.3})`; // Blue with varying opacity
-                this.ts   = 0;
-            }
-
-            p_visible(){
-                // Return True if the particle is within the bounds of the canvas
-                let xViz = (0.0 < this.posn[0]) && (this.posn[0] < this.cnvs.width);
-                let yViz = (0.0 < this.posn[1]) && (this.posn[1] < this.cnvs.height);
-                return (xViz && yViz);
-            }
-
-            revive( yScroll ){
-
-                let yMag = Math.abs( yScroll );
-
-                if( this.posn[1] < 0.0 ){
-                    this.posn = [Math.random() * this.cnvs.width, this.cnvs.height - yMag * Math.random(),];
-                }
-
-                if( this.posn[1] > this.cnvs.height ){
-                    this.posn = [Math.random() * this.cnvs.width, yMag * Math.random()];
-                }
-
-                this.velo = [Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25,];
-                this.size = Math.random() * 3 + 1;
-                this.colr = `rgba(52, 152, 219, ${Math.random() * 0.7 + 0.3})`; // Blue with varying opacity
-            }
-
-            check_renew( yScroll ){
-                if( !this.p_visible() ){
-                    this.revive( yScroll )
-                }
-            }
-
-            update( tDelta ){
-                // Update position according to current velocity
-                this.ts++;
-                this.posn[0] += this.velo[0] * tDelta;
-                this.posn[0] %= this.cnvs.width;
-                this.posn[1] += this.velo[1] * tDelta;
-            }
-
-            move( xVec ){
-                // Update position by some `xVec`
-                this.posn[0] += xVec[0];
-                this.posn[1] += xVec[1];
-                // console.log( this.posn );
-            }
-        }
-
-        // Canvas side margins animations
-        let leftCanvas, rightCanvas, leftCtx, rightCtx;
-        let particles = [];
-        const particleCount = 50;
-
-        function initCanvasMargins() {
-            // Set up left canvas
-            leftCanvas = document.getElementById('left-canvas');
-            leftCanvas.width = leftCanvas.offsetWidth;
-            leftCanvas.height = window.innerHeight;
-            leftCtx = leftCanvas.getContext('2d');
-            
-            // Set up right canvas
-            rightCanvas = document.getElementById('right-canvas');
-            rightCanvas.width = rightCanvas.offsetWidth;
-            rightCanvas.height = window.innerHeight;
-            rightCtx = rightCanvas.getContext('2d');
-            
-            // Create particles
-            for( let i = 0; i < particleCount; i++ ){
-                particles.push( new Particle( 'left-canvas' ) )
-                particles.push( new Particle( 'right-canvas' ) )
-            }
-            
-            // Start animation
-            animateCanvasMargins();
-        }
-
-        function animateCanvasMargins() {
-            // Clear canvases
-            leftCtx.clearRect(0, 0, leftCanvas.width, leftCanvas.height);
-            rightCtx.clearRect(0, 0, rightCanvas.width, rightCanvas.height);
-            
-            // Update and draw particles
-            particles.forEach( particle => {
-                // Update position
-                particle.update( 1.0 )
-
-                // console.log( particle.posn, particle.velo )
-
-                ctx = particle.cnvs.getContext('2d')
-                
-                // Draw particle
-                ctx.beginPath();
-                ctx.fillStyle = particle.colr;
-                // console.log( particle.colr )
-                ctx.arc( particle.posn[0], particle.posn[1], particle.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            // // Draw connecting lines
-            // drawConnections(leftCtx, 'left');
-            // drawConnections(rightCtx, 'right');
-            
-            // Continue animation
-            requestAnimationFrame(animateCanvasMargins);
-        }
-
-        function drawConnections(ctx, side) {
-            const sideParticles = particles.filter(p => p.side === side);
-            
-            for (let i = 0; i < sideParticles.length; i++) {
-                for (let j = i + 1; j < sideParticles.length; j++) {
-                    const p1 = sideParticles[i];
-                    const p2 = sideParticles[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Only draw connection if particles are close enough
-                    if (distance < 50) {
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(52, 152, 219, ${0.2 * (1 - distance / 50)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        ///// Handle window resize ////////////////////////////////////////
-        function handleResize() {
-            if (leftCanvas && rightCanvas) {
-                leftCanvas.width = leftCanvas.offsetWidth;
-                leftCanvas.height = window.innerHeight;
-                
-                rightCanvas.width = rightCanvas.offsetWidth;
-                rightCanvas.height = window.innerHeight;
-            }
-        }
-
-        window.addEventListener('resize', handleResize);
-
-
-        ///// Handle window scroll ////////////////////////////////////////
-        let lastKnownScrollPosition = window.scrollY;
-        let ticking = false;
-
-        function doSomething( yDelta ){
-            // Update and draw particles
-            console.log( yDelta )
-            
-            particles.forEach( particle => {
-                if( yDelta < particle.cnvs.height * 0.90 ){
-                    particle.move( [0.0, 1.0*yDelta] )
-                    particle.check_renew( yDelta );
-                }
-            })
-        }
-
-        document.addEventListener("scroll", (event) => {
-            ScrollPosition = window.scrollY;
-
-            doSomething( lastKnownScrollPosition - ScrollPosition );
-            lastKnownScrollPosition = ScrollPosition;
-
-            
-        });
-
-
         
-        
-        // Initialize Three.js and canvas margins when the page loads
-        window.onload = function() {
-            init();
-            initCanvasMargins();
-        };
+        // Initialize Three.js when the page loads
+        window.onload = init;
     </script>
 </body>
 </html>
