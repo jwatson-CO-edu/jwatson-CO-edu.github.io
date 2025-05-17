@@ -497,6 +497,7 @@
                 this.posn[0] += this.velo[0] * tDelta;
                 this.posn[0] %= this.cnvs.width;
                 this.posn[1] += this.velo[1] * tDelta;
+                this.check_renew( 0.0 );
             }
 
             move( xVec ){
