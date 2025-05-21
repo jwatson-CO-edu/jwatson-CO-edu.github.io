@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Portfolio</title>
+    <title>All About James Watson</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
@@ -266,6 +266,10 @@
                 width: 40px;
             }
         }
+
+        #responsibilities {
+            padding-left: 30px;
+        }
     </style>
 </head>
 <body>
@@ -283,7 +287,7 @@
 
     <nav>
         <ul>
-            <li><a href="#about">About</a></li>
+            <li><a href="#about">Entryway</a></li>
             <li><a href="#education">Education</a></li>
             <li><a href="#experience">Experience</a></li>
             <li><a href="#publications">Publications</a></li>
@@ -295,49 +299,143 @@
 
     <main>
         <section id="about">
-            <h2>About Me</h2>
+            <h2>Entryway</h2>
             <div class="section-content">
-                <p>Welcome to my portfolio! I am a [Your Profession] with experience in [Your Skills]. I am passionate about [Your Interests] and dedicated to [Your Goals].</p>
-                <p>Feel free to explore my website to learn more about my background, skills, and projects.</p>
+                <p>Hello! I am a PhD. Candidate in Computer Science researching Robotic Planning Under Uncertainty.</p>
+                <p>I specialize in Long-Horizon Planning and Robotic Manipulation.</p>
+                <p>This website is your starting point for learning about my background, skills, and projects.</p>
             </div>
         </section>
 
         <section id="education">
             <h2>Education</h2>
             <div class="section-content">
+
+                <!-- PhD @ CU Boulder -->
                 <div class="item">
                     <div class="item-header">
-                        <span class="item-title">Degree Name</span>
-                        <span class="item-period">Year - Year</span>
+                        <span class="item-title">Ph.D. Candidate, Computer Sci. (Robotics)</span>
+                        <span class="item-period">2025</span>
                     </div>
-                    <div class="item-subtitle">Institution Name</div>
+                    <div class="item-subtitle">University of Colorado Boulder</div>
                     <div class="item-description">
-                        <p>Brief description of your studies, achievements, thesis, or relevant coursework.</p>
+                        <p>Robotic manipulation planning under uncertainty</p>
                     </div>
                 </div>
-                <!-- Add more education items as needed -->
+
+                <!-- MS @ U of U -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">M.Sci., Mechanical Eng. (Robotics)</span>
+                        <span class="item-period">2018</span>
+                    </div>
+                    <div class="item-subtitle">University of Utah</div>
+                    <div class="item-description">
+                        <p>Assembly Sequence Planning and Geometric Reasoning</p>
+                    </div>
+                </div>
+
+                <!-- BS @ UIUC -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">B.Sci., Mechanical Engineering</span>
+                        <span class="item-period">2006</span>
+                    </div>
+                    <div class="item-subtitle">University of Illinois at Urbana-Chapaign</div>
+                    <div class="item-description">
+                        <p>Including coursework in Computer Science</p>
+                    </div>
+                </div>
+                
             </div>
         </section>
 
         <section id="experience">
             <h2>Experience</h2>
             <div class="section-content">
+
+                <!-- RA -->
                 <div class="item">
                     <div class="item-header">
-                        <span class="item-title">Job Title</span>
-                        <span class="item-period">Month Year - Month Year</span>
+                        <span class="item-title">Research Assistant</span>
+                        <span class="item-period">Jan 2022 - Aug 2024</span>
                     </div>
-                    <div class="item-subtitle">Company Name, Location</div>
+                    <div class="item-subtitle">University of Colorado Boulder</div>
                     <div class="item-description">
-                        <p>Description of your responsibilities and achievements in this role.</p>
-                        <ul>
-                            <li>Key achievement or responsibility</li>
-                            <li>Another key achievement or responsibility</li>
-                            <li>More details about your work</li>
+                        <p>Goal: Robotic ecological intervention to restore native vegetation to the desert in Moab, Utah.</p>
+                        <p>Developed full ROS software stack for UR5 serial manipulator, including Task and Motion Planning.</p>
+                        Topics:
+                        <ul id="responsibilities">
+                            <li>Planning Under Uncertainty</li>
+                            <li>Scene Understanding</li>
+                            <li>Recovery from Failure</li>
+                            <li>3D Perception</li>
                         </ul>
                     </div>
                 </div>
-                <!-- Add more experience items as needed -->
+
+
+                <!-- TA -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">Teaching Assistant</span>
+                        <span class="item-period">Jan 2018 - Dec 2021</span>
+                    </div>
+                    <div class="item-subtitle">University of Colorado Boulder</div>
+                    <div class="item-description">
+                        <p>Mentoring student design teams on industry-sponsored real-world projects with goals and milestones, Teaching and tutoring fundamental computing and programming concepts, Development of course materials, Conducting programming interviews, Development of automated grading tools for programming assignments</p>
+                    </div>
+                </div>
+                
+                <!-- RA -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">Research Assistant</span>
+                        <span class="item-period">May 2017 - Dec 2017</span>
+                    </div>
+                    <div class="item-subtitle">University of Utah</div>
+                    <div class="item-description">
+                        <p>Research into control algorithms and techniques for a powered exoskeleton system with defense applications</p>
+                        <p>Development, testing, and documentation of proof-of-concept software in C for efficient implementation on limited hardware</p>
+                    </div>
+                </div>
+
+                <!-- TA -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">Teaching Assistant</span>
+                        <span class="item-period">Aug 2015 - May 2017</span>
+                    </div>
+                    <div class="item-subtitle">University of Utah</div>
+                    <div class="item-description">
+                        <p>Leading lab sections for courses in the University Mechatronics series in which class concepts are applied in hands-on exercises, mentoring and support of undergraduate students on robotics projects, fabrication and maintenance of lab equipment, preparation of lab handouts and materials, timely grading of lab reports and exams</p>
+                    </div>
+                </div>
+
+                <!-- FME -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">Test Engineer</span>
+                        <span class="item-period">Oct 2010 - Aug 2015</span>
+                    </div>
+                    <div class="item-subtitle">Fairbanks Morse Defense (Formerly Fairbanks Morse Engine), Beloit, WI, USA</div>
+                    <div class="item-description">
+                        <p>Responsible for directing and conducting testing on diesel engine-generator sets and auxiliary systems to meet customer requirements, including; procedurewriting,execution,andreporting. Troubleshooting of engine and test stand electromechanical and fluid systems through a hands-on approach.</p>
+                    </div>
+                </div>
+
+                <!-- Byron -->
+                <div class="item">
+                    <div class="item-header">
+                        <span class="item-title">System Engineer (NSSS/BOP)</span>
+                        <span class="item-period">Jun 2006 - Oct 2010</span>
+                    </div>
+                    <div class="item-subtitle">Exelon Nuclear, Byron Nuclear Generating Station, Byron, IL, USA</div>
+                    <div class="item-description">
+                        <p>Monitoring and technical support for specific plant systems; general-use compressed air, instrument air, reheat heat exchangers, and large water chillers (Carrier). This includes; early recognition of developing problems through monitoring, troubleshooting equipment failures, improvements to Operating procedures</p>
+                    </div>
+                </div>
+
             </div>
         </section>
 
