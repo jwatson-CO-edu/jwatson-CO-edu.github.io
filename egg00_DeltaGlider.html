@@ -41,6 +41,7 @@
 
         class TriMesh{
             // Basic rigid moving model
+            // https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L297
             constructor(){
                 // Geometry //
                 this.V     = []; // Vertices 
@@ -53,28 +54,46 @@
             load_tri( v1, v2, v3 ){
                 // FIXME, START HERE: WHEN USING BUFFERS, STORE AS FLOAT
                 // Add a triangle to the model with unshared vertices and flat shading
-                this.V.push( v1 );
-                this.V.push( v2 );
-                this.V.push( v3 );
+                this.V = this.V.concat( v1 );
+                this.V = this.V.concat( v2 );
+                this.V = this.V.concat( v3 );
+                vec1 = Vector3( v1[0], v1[1], v1[2] )
+                vec2 = Vector3( v2[0], v2[1], v2[2] )
+                vec3 = Vector3( v3[0], v3[1], v3[2] )
                 let i = this.F.length
-                this.F.concat( [i,i+1,i+2,] )
-                v12 = v2.sub( v1 )
-                v13 = v3.sub( v1 )
+                this.F = this.F.concat( [i,i+1,i+2,] )
+                v12 = vec2.sub( vec1 )
+                v13 = vec3.sub( vec1 )
                 n   = v12.cross( v13 )
                 n.normalize()
-                for( let i = 0; i < 3; i++ ){  this.N.push( n );  }
+                for( let i = 0; i < 3; i++ ){  this.N = this.N.concat( [n.x, n.y, n.z] );  }
             }
 
             load_geo(){
                 // Get the model ready for drawing
                 this.model.setIndex( this.F );
                 this.model.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
-                this.model.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
+                this.model.setAttribute( 'normal'  , new THREE.Float32BufferAttribute( this.N, 3 ) );
+            }
+
+            set_pose( poseVec ){
+                // Set pose from [pX, pY, pZ, rX, rY, rZ,]
+                this.position.x = poseVec[0];
+                this.position.y = poseVec[1];
+                this.position.z = poseVec[2];
+                this.rotation.x = poseVec[3];
+                this.rotation.y = poseVec[4];
+                this.rotation.z = poseVec[5];
             }
         }
 
+
+
+        ////////// DERIVED CLASSES /////////////////////////////////////////////////////////////////
+
         class DeltaGlider extends TriMesh{
             // A fun little space plane
+            // https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L533
             constructor( wingspan = 10.0 ){
                 super();
                 this.sldClr    = new THREE.Color( 'skyblue' );
@@ -85,52 +104,73 @@
                 this.thickFrac = 0.25;
 
                 load_tri( // Left  Front Top
-                    Vector3(  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ), // 0, Front
-                    Vector3( -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 4, Left wingtip
-                    Vector3(  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ) //  1, Top peak
+                    [  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ], // 0, Front
+                    [ -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 4, Left wingtip
+                    [  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ] //  1, Top peak
                 );
                 load_tri( // Left  Rear  Top
-                    Vector3(  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ), // 1, Top peak
-                    Vector3( -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 4, Left wingtip
-                    Vector3(  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ) //  3, Back
-                );
-                load_tri( // Right Front Top
-                    Vector3( +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 5, Right wingtip
-                    Vector3(  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ), // 0, Front
-                    Vector3(  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 )  // 1, Top peak
+                    [  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ], // 1, Top peak
+                    [ -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 4, Left wingtip
+                    [  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ] //  3, Back
+                );                load_tri( // Right Front Top
+                    [ +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ], // 0, Front
+                    [  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ]  // 1, Top peak
                 );
                 load_tri( // Right Rear  Top
-                    Vector3( +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 5, Right wingtip
-                    Vector3(  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ), // 1, Top peak
-                    Vector3(  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ) //  3, Back
+                    [ +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0       , +wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ], // 1, Top peak
+                    [  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ] //  3, Back
                 );
                 load_tri( // Left  Front Bottom
-                    Vector3(  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ), // 0, Front
-                    Vector3(  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ), // 2, Bottom peak
-                    Vector3( -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 )  // 4, Left wingtip
+                    [  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ], // 0, Front
+                    [  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ], // 2, Bottom peak
+                    [ -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ]  // 4, Left wingtip
                 );
                 load_tri( // Left  Rear  Bottom
-                    Vector3(  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ), // 2, Bottom peak
-                    Vector3(  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ), // 3, Back
-                    Vector3( -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 )  // 4, Left wingtip
+                    [  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ], // 2, Bottom peak
+                    [  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ], // 3, Back
+                    [ -wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ]  // 4, Left wingtip
                 );
                 load_tri( // Right Front Bottom
-                    Vector3(  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ), // 0, Front
-                    Vector3( +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 5, Right wingtip
-                    Vector3(  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 )  // 2, Bottom peak
+                    [  0.0       ,  0.0                 , 0.0                 + wingspan*sweptFrac/2.0 ], // 0, Front
+                    [ +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ]  // 2, Bottom peak
                 );
                 load_tri( // Right Rear  Bottom
-                    Vector3(  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ), // 2, Bottom peak
-                    Vector3( +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ), // 5, Right wingtip
-                    Vector3(  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 )  // 3, Back
+                    [  0.0       , -wingspan*thickFrac/2, -wingspan*fusFrac/2 + wingspan*sweptFrac/2.0 ], // 2, Bottom peak
+                    [ +wingspan/2,  0.0                 , -wingspan*sweptFrac + wingspan*sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0       ,  0.0                 , -wingspan*fusFrac   + wingspan*sweptFrac/2.0 ]  // 3, Back
                 );
             }
         }
 
+        
+        class FlightFollowThirdP_Camera extends THREE.PerspectiveCamera {
+            // Follow a target with some nice dynamics
+            // https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L661
+            constructor( desiredOffset_m, tCenter, tXform, fov, aspect, near, far ){
+                // Set params, place camera, and set target
+                super( fov, aspect, near, far );
+                this.trgtCenter = tCenter; // --------- Position of the target
+                this.offset_d   = desiredOffset_m; // - Desired camera offset in meters
+                this.trgtXform  = tXform; // ---------- Orientation of the target
+            }
+
+            update_target_position( tCenter ){  this.trgtCenter = tCenter;  } // Point the camera
+
+            advance_camera(){
+		        // Move the camera after all the target updates are in
+                // FIXME, START HERE: TRANSLATE CAMERA DYNAMICS FROM C++
+            }
+        }
+
+        ////////// CLAUDE SLOP /////////////////////////////////////////////////////////////////////
+
 
         // Scene setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const scene    = new THREE.Scene();
+        const camera   = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         
         renderer.setSize(window.innerWidth, window.innerHeight);
