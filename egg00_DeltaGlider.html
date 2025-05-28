@@ -37,6 +37,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        ////////// HELPER FUNCTIONS ////////////////////////////////////////////////////////////////
+
+
+
         ////////// BASE CLASSES ////////////////////////////////////////////////////////////////////
 
         class TriMesh{
@@ -161,7 +165,7 @@
 
             advance_camera(){
 		        // Move the camera after all the target updates are in
-                // FIXME, START HERE: TRANSLATE CAMERA DYNAMICS FROM C++
+                let trgtDiff = this.position.sub( this.trgtCenter )
             }
         }
 
