@@ -37,6 +37,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        ////////// HELPER FUNCTIONS ////////////////////////////////////////////////////////////////
+
+
+
         ////////// BASE CLASSES ////////////////////////////////////////////////////////////////////
 
         class TriMesh{
@@ -161,24 +165,7 @@
 
             advance_camera(){
 		        // Move the camera after all the target updates are in
-                let trgtDiff = this.position.sub( this.target );
-                let sepDist  = min( trgtDiff.length(), offset_d );
-                trgtDiff.normalize();
-                let dragVec  = trgtDiff.multiplyScalar( sepDist );
-                this.position = trgtCenter.add( dragVec );
-                this.lookAt( this.target );
-                // WARNING: MIGHT NEED TO UPDATE CAMERA?
-            }
-
-            inside_FOV( pnt ){
-                // Return true if the ray from the camera to the `pnt` is within the FOV (conservative)
-                // FIXME, START HERE: MY TOLERANCE IS SO LOW RIGHT NOW
-                let vLook = Vector3Subtract( this.target, this.position );
-                let vRayP = Vector3Subtract( pnt        , this.position );
-                if( Vector3Angle( vLook, vRayP ) * RAD2DEG <= this.fovy )  
-                    return true;
-                else
-                    return false;
+                let trgtDiff = this.position.sub( this.trgtCenter )
             }
         }
 
