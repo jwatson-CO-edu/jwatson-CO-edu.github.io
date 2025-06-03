@@ -152,7 +152,7 @@
             constructor( desiredOffset_m, tCenter, tXform, fov, aspect, near, far ){
                 // Set params, place camera, and set target
                 super( fov, aspect, near, far );
-                this.trgtCenter = tCenter; // --------- Position of the target
+                this.target     = tCenter; // --------- Position of the target
                 this.offset_d   = desiredOffset_m; // - Desired camera offset in meters
                 this.trgtXform  = tXform; // ---------- Orientation of the target
             }
@@ -161,7 +161,24 @@
 
             advance_camera(){
 		        // Move the camera after all the target updates are in
-                // FIXME, START HERE: TRANSLATE CAMERA DYNAMICS FROM C++
+                let trgtDiff = this.position.sub( this.target );
+                let sepDist  = min( trgtDiff.length(), offset_d );
+                trgtDiff.normalize();
+                let dragVec  = trgtDiff.multiplyScalar( sepDist );
+                this.position = trgtCenter.add( dragVec );
+                this.lookAt( this.target );
+                // WARNING: MIGHT NEED TO UPDATE CAMERA?
+            }
+
+            inside_FOV( pnt ){
+                // Return true if the ray from the camera to the `pnt` is within the FOV (conservative)
+                // FIXME, START HERE: MY TOLERANCE IS SO LOW RIGHT NOW
+                let vLook = Vector3Subtract( this.target, this.position );
+                let vRayP = Vector3Subtract( pnt        , this.position );
+                if( Vector3Angle( vLook, vRayP ) * RAD2DEG <= this.fovy )  
+                    return true;
+                else
+                    return false;
             }
         }
 
