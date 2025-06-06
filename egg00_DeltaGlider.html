@@ -40,26 +40,26 @@
         ////////// RAYLIB FUNC HACKS ///////////////////////////////////////////////////////////////
 
         function Vector3Subtract( v1, v2 ){
-            // Non-destructuve Subtraction
+            // Non-destructuve Subtraction, named after Raylib func
             rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.sub( v2 );
             return rtnVec;
         }
 
         function Vector3CrossProduct( v1, v2 ){
-            // Non-destructuve Cross Product
+            // Non-destructuve Cross Product, named after Raylib func
             rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.cross( v2 );
             return rtnVec;
         }
 
         function Vector3DotProduct( v1, v2 ){
-            // Non-destructuve Dot Product
+            // Dot Product, named after Raylib func
             return v1.dot( v2 );
         }
 
         function Vector3Scale( vec, factor ){
-            // Multiply each element by a scalar (non-destructive)
+            // Multiply each element by a scalar (non-destructive), named after Raylib func
             return Vector3(
                 vec.x * factor,
                 vec.y * factor,
@@ -68,13 +68,14 @@
         }
 
         function Vector3Add( v1, v2 ){
-            // Non-destructuve Addition
+            // Non-destructuve Addition, named after Raylib func
             rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.add( v2 );
             return rtnVec;
         }
 
         function Vector3Angle( v1, v2 ){
+            // Angle between tow vectors in radians, named after Raylib func
             // Author: maxim1000, https://stackoverflow.com/a/12239193
             let crs = Vector3CrossProduct( v1, v2 );
             return Math.atan2( crs.length(), Vector3DotProduct( v1, v2 ) );
