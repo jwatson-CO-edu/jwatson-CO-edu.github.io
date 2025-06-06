@@ -75,7 +75,7 @@
         }
 
         function Vector3Angle( v1, v2 ){
-            // Angle between tow vectors in radians, named after Raylib func
+            // Angle between two vectors in radians, named after Raylib func
             // Author: maxim1000, https://stackoverflow.com/a/12239193
             let crs = Vector3CrossProduct( v1, v2 );
             return Math.atan2( crs.length(), Vector3DotProduct( v1, v2 ) );
