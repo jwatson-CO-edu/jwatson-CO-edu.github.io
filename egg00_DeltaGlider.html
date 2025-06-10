@@ -38,17 +38,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         ////////// RAYLIB FUNC HACKS ///////////////////////////////////////////////////////////////
+        let RAD2DEG = 180.0 / Math.PI;
+        let dDrawMin =    0.100;
+        let dDrawMax = 2000.0;
 
         function Vector3Subtract( v1, v2 ){
             // Non-destructuve Subtraction, named after Raylib func
-            rtnVec = Vector3( v1.x, v1.y, v1.z );
+            let rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.sub( v2 );
             return rtnVec;
         }
 
+        function Vector3Distance( v1, v2 ){
+            // Measure the distance between two points, named after Raylib func
+            let measureVec = Vector3Subtract( v1, v2 );
+            return measureVec.length();
+        }
+
         function Vector3CrossProduct( v1, v2 ){
             // Non-destructuve Cross Product, named after Raylib func
-            rtnVec = Vector3( v1.x, v1.y, v1.z );
+            let rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.cross( v2 );
             return rtnVec;
         }
@@ -69,7 +78,7 @@
 
         function Vector3Add( v1, v2 ){
             // Non-destructuve Addition, named after Raylib func
-            rtnVec = Vector3( v1.x, v1.y, v1.z );
+            let rtnVec = Vector3( v1.x, v1.y, v1.z );
             rtnVec.add( v2 );
             return rtnVec;
         }
@@ -96,7 +105,6 @@
             }
 
             load_tri_from_lists( v1, v2, v3 ){
-                // FIXME, START HERE: WHEN USING BUFFERS, STORE AS FLOAT
                 // Add a triangle to the model with unshared vertices and flat shading
                 this.V = this.V.concat( v1 );
                 this.V = this.V.concat( v2 );
@@ -201,6 +209,8 @@
                 this.target     = tCenter; // --------- Position of the target
                 this.offset_d   = desiredOffset_m; // - Desired camera offset in meters
                 this.trgtXform  = tXform; // ---------- Orientation of the target
+                this.fovy /*-*/ = 45.0;
+                this.projection = 0;
             }
 
             update_target_position( tCenter ){  this.target = tCenter;  } // Point the camera
@@ -216,12 +226,20 @@
 
             inside_FOV( pnt ){
                 // Return true if the ray from the camera to the `pnt` is within the FOV (conservative)
-                let vLook = Vector3Subtract( target, position );
-                let vRayP = Vector3Subtract( pnt   , position );
-                if( Vector3Angle( vLook, vRayP ) * RAD2DEG <= fovy )  
+                let vLook = Vector3Subtract( this.target, this.position );
+                let vRayP = Vector3Subtract( pnt        , this.position );
+                if( Vector3Angle( vLook, vRayP ) * RAD2DEG <= this.fovy )  
                     return true;
                 else
                     return false;
+            }
+
+            signed_distance_to_frustrum( pnt ){
+                if( inside_FOV( pnt ) ){
+                    return Vector3Distance( pnt, position ) - dDrawMax;
+                }else{
+                    return nanf("");
+                }
             }
         }
 
