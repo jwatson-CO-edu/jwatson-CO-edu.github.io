@@ -101,8 +101,18 @@
                 this.F     = []; // Faces
                 this.N     = []; // Normals
                 this.C     = []; // Colors
-                this.model = new THREE.BufferGeometry(); // Three.js model, Pose stored here
+                this.geom  = new THREE.BufferGeometry(); // Three.js model, Pose stored here
+                this.matl  = new THREE.MeshLambertMaterial({ 
+                    color: 0xff4444,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                this.mesh = null;
+                // FIXME: WHERE IS THE MODEL POSE ACTUALLY READ FROM WHEN THE MODEL IS DRAWN??
+                this.position = new THREE.Vector3( 0.0, 0.0, 0.0 );
+                this.rotation = new THREE.Vector3( 0.0, 0.0, 0.0 );
             }
+            
 
             load_tri_from_lists( v1, v2, v3 ){
                 // Add a triangle to the model with unshared vertices and flat shading
@@ -123,9 +133,16 @@
 
             load_geo(){
                 // Get the model ready for drawing
-                this.model.setIndex( this.F );
-                this.model.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
-                this.model.setAttribute( 'normal'  , new THREE.Float32BufferAttribute( this.N, 3 ) );
+                this.geom.setIndex( this.F );
+                this.geom.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
+                this.geom.setAttribute( 'normal'  , new THREE.Float32BufferAttribute( this.N, 3 ) );
+            }
+
+            get_mesh(){
+                // Generate and return the actual mesh that will be displayed
+                this.load_geo();
+                this.mesh = new THREE.Mesh( this.geom, this.matl );
+                return this.mesh;
             }
 
             set_pose( poseVec ){
@@ -252,10 +269,11 @@
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         
         let glider = new DeltaGlider();
+        scene.add( glider.get_mesh() );
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x111111);
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = false;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         
         document.getElementById('container').appendChild(renderer.domElement);
@@ -281,6 +299,7 @@
         const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
         sphere.receiveShadow = true;
         scene.add(sphere);
+        
 
         // Red stellated octahedron (orbiting object)
         function createStellatedOctahedronGeometry(size = 0.5, stellationFactor = 1.5) {
