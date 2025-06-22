@@ -103,19 +103,22 @@
                 this.C     = []; // Colors
                 this.geom  = new THREE.BufferGeometry(); // Three.js model, Pose stored here
                 this.matl  = new THREE.MeshLambertMaterial({ 
-                    color: 0xff4444,
+                    color: 0x00ff00,
                     transparent: true,
-                    opacity: 0.9
+                    opacity: 1.0
                 });
                 this.mesh = null;
                 // FIXME: WHERE IS THE MODEL POSE ACTUALLY READ FROM WHEN THE MODEL IS DRAWN??
                 this.position = new THREE.Vector3( 0.0, 0.0, 0.0 );
                 this.rotation = new THREE.Vector3( 0.0, 0.0, 0.0 );
+                // console.log( this.position );
+                // console.log( this.rotation );
             }
             
 
             load_tri_from_lists( v1, v2, v3 ){
                 // Add a triangle to the model with unshared vertices and flat shading
+                console.log( v1, v2, v3 );
                 this.V = this.V.concat( v1 );
                 this.V = this.V.concat( v2 );
                 this.V = this.V.concat( v3 );
@@ -142,17 +145,31 @@
                 // Generate and return the actual mesh that will be displayed
                 this.load_geo();
                 this.mesh = new THREE.Mesh( this.geom, this.matl );
+                // this.mesh.position = new THREE.Vector3( this.position.x, this.position.y, this.position.z );
+                // this.mesh.rotation = new THREE.Vector3( this.rotation.x, this.rotation.y, this.rotation.z );
+                this.mesh.position.set( this.position.x, this.position.y, this.position.z );
+                this.mesh.rotation.set( this.rotation.x, this.rotation.y, this.rotation.z );
+                console.log( this.mesh.position );
+                console.log( this.mesh.rotation );
                 return this.mesh;
             }
 
-            set_pose( poseVec ){
+            set_pose( poseLst ){
                 // Set pose from [pX, pY, pZ, rX, rY, rZ,]
-                this.position.x = poseVec[0];
-                this.position.y = poseVec[1];
-                this.position.z = poseVec[2];
-                this.rotation.x = poseVec[3];
-                this.rotation.y = poseVec[4];
-                this.rotation.z = poseVec[5];
+                this.position.x = poseLst[0];
+                this.position.y = poseLst[1];
+                this.position.z = poseLst[2];
+                this.rotation.x = poseLst[3];
+                this.rotation.y = poseLst[4];
+                this.rotation.z = poseLst[5];
+                if( this.mesh != null ){
+                    this.mesh.position.x = poseLst[0];
+                    this.mesh.position.y = poseLst[1];
+                    this.mesh.position.z = poseLst[2];
+                    this.mesh.rotation.x = poseLst[3];
+                    this.mesh.rotation.y = poseLst[4];
+                    this.mesh.rotation.z = poseLst[5];
+                }
             }
         }
 
@@ -171,46 +188,51 @@
                 this.fusFrac   = 0.5;
                 this.sweptFrac = 0.75;
                 this.thickFrac = 0.25;
-
+                
+                console.log( this.wingSpan, this.sweptFrac, 2.0 );
                 this.load_tri_from_lists( // Left  Front Top
-                    [  0.0            ,  0.0                           , 0.0                           + this.wingspan*this.sweptFrac/2.0 ], // 0, Front
-                    [ -this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 4, Left wingtip
-                    [  0.0            , +this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ] //  1, Top peak
+                    [  0.0            ,  0.0                           , 0.0                           + this.wingSpan*this.sweptFrac/2.0 ], // 0, Front
+                    [  0.0            , +this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ], //  1, Top peak
+                    [ -this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ] // 4, Left wingtip
                 );
                 this.load_tri_from_lists( // Left  Rear  Top
-                    [  0.0            , +this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ], // 1, Top peak
-                    [ -this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 4, Left wingtip
-                    [  0.0            ,  0.0                           , -this.wingspan*this.fusFrac   + this.wingspan*this.sweptFrac/2.0 ] //  3, Back
+                    [  0.0            , +this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ], // 1, Top peak
+                    [  0.0            ,  0.0                           , -this.wingSpan*this.fusFrac   + this.wingSpan*this.sweptFrac/2.0 ], //  3, Back
+                    [ -this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ] // 4, Left wingtip
                 );                
                 this.load_tri_from_lists( // Right Front Top
-                    [ +this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 5, Right wingtip
-                    [  0.0            ,  0.0                           , 0.0                           + this.wingspan*this.sweptFrac/2.0 ], // 0, Front
-                    [  0.0            , +this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ]  // 1, Top peak
+                    [ +this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0            , +this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ],  // 1, Top peak
+                    [  0.0            ,  0.0                           , 0.0                           + this.wingSpan*this.sweptFrac/2.0 ] // 0, Front
                 );
                 this.load_tri_from_lists( // Right Rear  Top
-                    [ +this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 5, Right wingtip
-                    [  0.0            , +this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ], // 1, Top peak
-                    [  0.0            ,  0.0                           , -this.wingspan*this.fusFrac   + this.wingspan*this.sweptFrac/2.0 ] //  3, Back
+                    [ +this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ], // 5, Right wingtip
+                    [  0.0            ,  0.0                           , -this.wingSpan*this.fusFrac   + this.wingSpan*this.sweptFrac/2.0 ], //  3, Back
+                    [  0.0            , +this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ] // 1, Top peak
+                    
                 );
                 this.load_tri_from_lists( // Left  Front Bottom
-                    [  0.0            ,  0.0                           , 0.0                           + this.wingspan*this.sweptFrac/2.0 ], // 0, Front
-                    [  0.0            , -this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ], // 2, Bottom peak
-                    [ -this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ]  // 4, Left wingtip
+                    [  0.0            ,  0.0                           , 0.0                           + this.wingSpan*this.sweptFrac/2.0 ], // 0, Front
+                    [ -this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ],  // 4, Left wingtip
+                    [  0.0            , -this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ] // 2, Bottom peak
+                    
                 );
                 this.load_tri_from_lists( // Left  Rear  Bottom
-                    [  0.0            , -this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ], // 2, Bottom peak
-                    [  0.0            ,  0.0                           , -this.wingspan*this.fusFrac   + this.wingspan*this.sweptFrac/2.0 ], // 3, Back
-                    [ -this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ]  // 4, Left wingtip
+                    [  0.0            , -this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ], // 2, Bottom peak
+                    [ -this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ],  // 4, Left wingtip
+                    [  0.0            ,  0.0                           , -this.wingSpan*this.fusFrac   + this.wingSpan*this.sweptFrac/2.0 ] // 3, Back
                 );
                 this.load_tri_from_lists( // Right Front Bottom
-                    [  0.0            ,  0.0                           , 0.0                           + this.wingspan*this.sweptFrac/2.0 ], // 0, Front
-                    [ +this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 5, Right wingtip
-                    [  0.0            , -this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ]  // 2, Bottom peak
+                    [  0.0            ,  0.0                           , 0.0                           + this.wingSpan*this.sweptFrac/2.0 ], // 0, Front
+                    [  0.0            , -this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ],  // 2, Bottom peak
+                    [ +this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ] // 5, Right wingtip
+                    
                 );
                 this.load_tri_from_lists( // Right Rear  Bottom
-                    [  0.0            , -this.wingspan*this.thickFrac/2, -this.wingspan*this.fusFrac/2 + this.wingspan*this.sweptFrac/2.0 ], // 2, Bottom peak
-                    [ +this.wingspan/2,  0.0                           , -this.wingspan*this.sweptFrac + this.wingspan*this.sweptFrac/2.0 ], // 5, Right wingtip
-                    [  0.0            ,  0.0                           , -this.wingspan*this.fusFrac   + this.wingspan*this.sweptFrac/2.0 ]  // 3, Back
+                    [  0.0            , -this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ], // 2, Bottom peak
+                    [  0.0            ,  0.0                           , -this.wingSpan*this.fusFrac   + this.wingSpan*this.sweptFrac/2.0 ],  // 3, Back
+                    [ +this.wingSpan/2,  0.0                           , -this.wingSpan*this.sweptFrac + this.wingSpan*this.sweptFrac/2.0 ] // 5, Right wingtip
+                    
                 );
             }
         }
