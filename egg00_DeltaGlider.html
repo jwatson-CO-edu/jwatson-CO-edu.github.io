@@ -90,6 +90,55 @@
             return Math.atan2( crs.length(), Vector3DotProduct( v1, v2 ) );
         }
 
+        /* A Note on Row-Major and Column-Major Ordering: https://threejs.org/docs/#api/en/math/Matrix4
+        The constructor and set() method take arguments in row-major order, while internally 
+        they are stored in the elements array in column-major order. */
+
+        function MatrixRotateX( theta ){
+            // Create a Homogeneous Transform that rotates about the X-axis
+            let m = new THREE.Matrix4(); 
+            m.set( 1.0, 0.0          ,  0.0,          0.0, 
+                   0.0, cos( theta ) , -sin( theta ), 0.0,
+                   0.0, sin( theta ) ,  cos( theta ), 0.0, 
+                   0.0, 0.0          ,  0.0,          1.0 );
+            return m;
+        }
+
+        function MatrixRotateY( theta ){
+            // Create a Homogeneous Transform that rotates about the Y-axis
+            let m = new THREE.Matrix4(); 
+            m.set( cos( theta ), 0.0, -sin( theta ), 0.0, 
+                   0.0         , 1.0,  0.0         , 0.0,
+                   sin( theta ), 0.0,  cos( theta ), 0.0, 
+                   0.0         , 0.0,  0.0,          1.0 );
+            return m;
+        }
+
+        function MatrixRotateZ( theta ){
+            // Create a Homogeneous Transform that rotates about the Z-axis
+            let m = new THREE.Matrix4(); 
+            m.set( cos( theta ), -sin( theta ), 0.0, 0.0, 
+                   sin( theta ),  cos( theta ), 0.0, 0.0,
+                   0.0         ,  0.0         , 1.0, 0.0, 
+                   0.0         ,  0.0         , 0.0, 1.0 );
+            return m;
+        }
+
+        function MatrixMultiply( m1, m2 ){
+            // Return the matrix `m1` x `m2`
+            let m = new THREE.Matrix4(); 
+            m.multiplyMatrices( m1, m2 );
+            return m;
+        }
+
+        function Vector3Transform( vec, mtx ){
+            // Transform Vec: Multiply `mtx` by `vec` as a column vector
+            let rtnVec = new THREE.Vector3( vec.x, vec.y, vec.z );
+            rtnVec.applyMatrix4( mtx ); // This modifies the 'vector' in place
+            return rtnVec;
+        }
+
+
         ////////// BASE CLASSES ////////////////////////////////////////////////////////////////////
 
         class TriMesh{
@@ -108,11 +157,9 @@
                     opacity: 1.0
                 });
                 this.mesh = null;
-                // FIXME: WHERE IS THE MODEL POSE ACTUALLY READ FROM WHEN THE MODEL IS DRAWN??
                 this.position = new THREE.Vector3( 0.0, 0.0, 0.0 );
                 this.rotation = new THREE.Vector3( 0.0, 0.0, 0.0 );
-                // console.log( this.position );
-                // console.log( this.rotation );
+                // this.RPY      = new THREE.Vector3( 0.0, 0.0, 0.0 );
             }
             
 
@@ -154,23 +201,63 @@
                 return this.mesh;
             }
 
-            set_pose( poseLst ){
-                // Set pose from [pX, pY, pZ, rX, rY, rZ,]
-                this.position.x = poseLst[0];
-                this.position.y = poseLst[1];
-                this.position.z = poseLst[2];
-                this.rotation.x = poseLst[3];
-                this.rotation.y = poseLst[4];
-                this.rotation.z = poseLst[5];
+            set_posn( x_, y_, z_ ){
+                // Set position of mesh
+                this.position.x = x_;
+                this.position.y = y_;
+                this.position.z = z_;
                 if( this.mesh != null ){
-                    this.mesh.position.x = poseLst[0];
-                    this.mesh.position.y = poseLst[1];
-                    this.mesh.position.z = poseLst[2];
-                    this.mesh.rotation.x = poseLst[3];
-                    this.mesh.rotation.y = poseLst[4];
-                    this.mesh.rotation.z = poseLst[5];
+                    this.mesh.position.x = x_;
+                    this.mesh.position.y = y_;
+                    this.mesh.position.z = z_;
                 }
             }
+
+            set_rotn( x_, y_, z_ ){
+                // Set rotation of mesh
+                this.rotation.x = x_;
+                this.rotation.y = y_;
+                this.rotation.z = z_;
+                if( this.mesh != null ){
+                    this.mesh.rotation.x = x_;
+                    this.mesh.rotation.y = y_;
+                    this.mesh.rotation.z = z_;
+                }
+            }
+
+            set_pose( poseLst ){
+                // Set pose from [pX, pY, pZ, rX, rY, rZ,]
+                this.set_posn( poseLst[0], poseLst[1], poseLst[2] );
+                this.set_rotn( poseLst[3], poseLst[4], poseLst[5] );
+            }
+
+            set_rotn_from_matx( matx ){
+                let e = new THREE.Euler( 0.0, 0.0, 0.0, 'XYZ' );
+                e.setFromRotationMatrix( matx );
+                this.set_rotn( e.x, e.y, e.z )
+            }
+
+            rotate_RPY( r_, p_, y_ ){
+                // Increment the world Roll, Pitch, Yaw of the model
+                let Eprev = new THREE.Euler( this.rotation.x, this.rotation.y, this.rotation.z, 'XYZ' );
+                let Tprev = new THREE.Matrix4(); 
+                Tprev.makeRotationFromEuler( Eprev );
+                let mz = MatrixRotateZ( r_ ); // Roll  about local Z
+                let mx = MatrixRotateX( p_ ); // Pitch about local X
+                let my = MatrixRotateY( y_ ); // Yaw   about local Y
+                let dT = MatrixMultiply( MatrixMultiply( my, mx ), mz );
+                let T  = MatrixMultiply( dT, Tprev );
+                this.set_rotn_from_matx( T );
+            }
+
+            z_thrust( d = 0.0 ){
+                // Advance a plane model in the forward direction (local Z)
+                // FIXME, START HERE: TRANSLATE TO THREE JS
+                let vec = Vector3Transform( new THREE.Vector3( 0.0, 0.0, d ), T );
+                XYZ = Vector3Add( XYZ, vec );
+            }
+
+
         }
 
 
