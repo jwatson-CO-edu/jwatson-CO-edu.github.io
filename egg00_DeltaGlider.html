@@ -341,7 +341,7 @@
             constructor( initPosn, desiredOffset_m, tCenter, tXform, fov, aspect, near, far ){
                 // Set params, place camera, and set target
                 super( fov, aspect, near, far );
-                this.position   = initPosn;
+                this.set_posn( initPosn );
                 this.target     = tCenter; // --------- Position of the target
                 this.offset_d   = desiredOffset_m; // - Desired camera offset in meters
                 this.trgtXform  = tXform; // ---------- Orientation of the target
@@ -349,15 +349,24 @@
                 this.projection = 0;
             }
 
+            set_posn( vec3 ){
+                // Set the camera position
+                this.position.x = vec3.x;
+                this.position.y = vec3.y;
+                this.position.z = vec3.z;
+            }
+
             update_target_position( tCenter ){  this.target = tCenter;  } // Point the camera
 
             advance_camera(){
 		        // Move the camera after all the target updates are in
-                let trgtDiff = Vector3Subtract( this.position, this.trgtCenter );
-                let sepDist  = min( trgtDiff.length(), this.offset_d );
+                let trgtDiff = Vector3Subtract( this.position, this.target );
+                let sepDist  = Math.min( trgtDiff.length(), this.offset_d );
                 trgtDiff.normalize();
                 let dragVec = Vector3Scale( trgtDiff, sepDist );
-                this.target = Vector3Add( this.target, dragVec );
+                let nuPosn  = Vector3Add( this.target, dragVec );
+                this.position.set( nuPosn.x, nuPosn.y, nuPosn.z );
+                this.lookAt( this.target.x, this.target.y, this.target.z );
             }
 
             inside_FOV( pnt ){
@@ -512,13 +521,15 @@
         scene.add( octahedron );
 
         // Camera position
-        camera.position.set( 5, 3, 5 );
-        camera.lookAt( 0, 0, 0 );
+        // camera.position.set( 5, 3, 5 );
+        // camera.lookAt( 0, 0, 0 );
+        camFllw.position.set( 5, 5, 5 );
+        camFllw.update_target_position( glider.position );
 
         // Animation variables
-        let time = 0;
+        let   time /*--*/ = 0;
         const orbitRadius = 3;
-        const orbitSpeed = 0.02;
+        const orbitSpeed  = 0.02;
 
         // Animation loop
         function animate(){
@@ -541,17 +552,19 @@
             glider.z_thrust( 0.025 );
             
             // Gently move the camera for a dynamic view
-            camera.position.x = 5 * Math.cos( time * 0.1 );
-            camera.position.z = 5 * Math.sin( time * 0.1 );
-            camera.lookAt( 0, 0, 0 );
+            // camera.position.x = 5 * Math.cos( time * 0.1 );
+            // camera.position.z = 5 * Math.sin( time * 0.1 );
+            // camera.lookAt( 0, 0, 0 );
+            camFllw.update_target_position( glider.position );
+            camFllw.advance_camera();
             
-            renderer.render( scene, camera );
+            renderer.render( scene, camFllw );
         }
 
         // Handle window resize
         window.addEventListener( 'resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+            camFllw.aspect = window.innerWidth / window.innerHeight;
+            camFllw.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
