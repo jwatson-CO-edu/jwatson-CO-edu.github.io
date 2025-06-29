@@ -149,10 +149,11 @@
             // https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L297
             constructor(){
                 // Geometry //
-                this.V     = []; // Vertices 
+                this.V     = []; // Vertices (float)
                 this.F     = []; // Faces
                 this.N     = []; // Normals
                 this.C     = []; // Colors
+                this.vert  = []; // Vertices (Vector3)
                 this.geom  = new THREE.BufferGeometry(); // Three.js model, Pose stored here
                 this.matl  = new THREE.MeshLambertMaterial({ 
                     color: 0x00ff00,
