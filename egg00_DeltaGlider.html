@@ -179,7 +179,6 @@
 
             load_tri_from_lists( v1, v2, v3 ){
                 // Add a triangle to the model with unshared vertices and flat shading
-                console.log( v1, v2, v3 );
                 this.V = this.V.concat( v1 );
                 this.V = this.V.concat( v2 );
                 this.V = this.V.concat( v3 );
@@ -195,12 +194,29 @@
                 for( let i = 0; i < 3; i++ ){  this.N = this.N.concat( [n.x, n.y, n.z] );  }
             }
 
+
+            load_tri_from_Vector3( v1, v2, v3 ){
+                // Add a triangle to the model with unshared vertices and flat shading
+                this.V = this.V.concat( [v1.x, v1.y, v1.z,] );
+                this.V = this.V.concat( [v2.x, v2.y, v2.z,] );
+                this.V = this.V.concat( [v3.x, v3.y, v3.z,] );
+                let i  = this.F.length
+                this.F = this.F.concat( [i,i+1,i+2,] )
+                let v12 = Vector3Subtract( v2, v1 );
+                let v13 = Vector3Subtract( v3, v1 );
+                let n   = Vector3CrossProduct( v12, v13 );
+                n.normalize();
+                for( let i = 0; i < 3; i++ ){  this.N = this.N.concat( [n.x, n.y, n.z] );  }
+            }
+
+
             load_geo(){
                 // Get the model ready for drawing
                 this.geom.setIndex( this.F );
                 this.geom.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
                 this.geom.setAttribute( 'normal'  , new THREE.Float32BufferAttribute( this.N, 3 ) );
             }
+
 
             get_mesh(){
                 // Generate and return the actual mesh that will be displayed
@@ -212,6 +228,7 @@
                 console.log( this.mesh.rotation );
                 return this.mesh;
             }
+
 
             set_posn( x_, y_, z_ ){
                 // Set position of mesh
@@ -225,6 +242,7 @@
                 }
             }
 
+
             set_rotn( x_, y_, z_ ){
                 // Set rotation of mesh
                 this.rotation.x = x_;
@@ -237,17 +255,20 @@
                 }
             }
 
+
             set_pose( poseLst ){
                 // Set pose from [pX, pY, pZ, rX, rY, rZ,]
                 this.set_posn( poseLst[0], poseLst[1], poseLst[2] );
                 this.set_rotn( poseLst[3], poseLst[4], poseLst[5] );
             }
 
+
             set_rotn_from_matx( matx ){
                 let e = new THREE.Euler( 0.0, 0.0, 0.0, 'XYZ' );
                 e.setFromRotationMatrix( matx );
                 this.set_rotn( e.x, e.y, e.z )
             }
+
 
             rotate_RPY( r_, p_, y_ ){
                 // Increment the world Roll, Pitch, Yaw of the model
@@ -262,6 +283,7 @@
                 this.set_rotn_from_matx( T );
             }
 
+
             get_xform(){
                 // Get the current homogeneous transform
                 let Emesh = new THREE.Euler( this.rotation.x, this.rotation.y, this.rotation.z, 'XYZ' );
@@ -271,14 +293,13 @@
                 return xform;
             }
 
+
             z_thrust( d = 0.0 ){
                 // Advance a plane model in the forward direction (local Z)
                 let T   = this.get_xform();
                 let vec = Vector3Transform( new THREE.Vector3( 0.0, 0.0, d ), T );
                 this.set_posn( vec.x, vec.y, vec.z );
             }
-
-
         }
 
 
@@ -381,7 +402,31 @@
                 this.vert.push( new THREE.Vector3( -a,  0, -b ) );
                 this.vert.push( new THREE.Vector3(  b, -a,  0 ) );
                 this.vert.push( new THREE.Vector3( -b, -a,  0 ) );
+
+                // Define the icosahedron's 20 triangular faces: CCW-out
+                this.load_tri_from_Vector3( V[ 2], V[ 1], V[ 0] );
+                this.load_tri_from_Vector3( V[ 1], V[ 2], V[ 3] );
+                this.load_tri_from_Vector3( V[ 5], V[ 4], V[ 3] );
+                this.load_tri_from_Vector3( V[ 4], V[ 8], V[ 3] );
+                this.load_tri_from_Vector3( V[ 7], V[ 6], V[ 0] );
+                this.load_tri_from_Vector3( V[ 6], V[ 9], V[ 0] );
+                this.load_tri_from_Vector3( V[11], V[10], V[ 4] );
+                this.load_tri_from_Vector3( V[10], V[11], V[ 6] );
+                this.load_tri_from_Vector3( V[ 9], V[ 5], V[ 2] );
+                this.load_tri_from_Vector3( V[ 5], V[ 9], V[11] );
+                this.load_tri_from_Vector3( V[ 8], V[ 7], V[ 1] );
+                this.load_tri_from_Vector3( V[ 7], V[ 8], V[10] );
+                this.load_tri_from_Vector3( V[ 2], V[ 5], V[ 3] );
+                this.load_tri_from_Vector3( V[ 8], V[ 1], V[ 3] );
+                this.load_tri_from_Vector3( V[ 9], V[ 2], V[ 0] );
+                this.load_tri_from_Vector3( V[ 1], V[ 7], V[ 0] );
+                this.load_tri_from_Vector3( V[11], V[ 9], V[ 6] );
+                this.load_tri_from_Vector3( V[ 7], V[10], V[ 6] );
+                this.load_tri_from_Vector3( V[ 5], V[11], V[ 4] );
+                this.load_tri_from_Vector3( V[10], V[ 8], V[ 4] );
             }
+
+            update(){  this.rotate_RPY( this.rolVel, this.ptcVel, this.yawVel );  } // Rotate
         }
 
         
