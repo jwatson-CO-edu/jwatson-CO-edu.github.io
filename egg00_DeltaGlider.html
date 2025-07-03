@@ -152,28 +152,99 @@
         }
 
 
+
+        ////////// THREE.JS HELPER FUNCTIONS ///////////////////////////////////////////////////////
+        // Author: James Watson, 2025-07
+
+        function get_matl_Lambert_w_alpha( matlColor = 0x00ff00, alpha = 1.0 ){
+            // Get a material that models https://en.wikipedia.org/wiki/Lambertian_reflectance
+            return new THREE.MeshLambertMaterial({ 
+                color      : matlColor,
+                transparent: true,
+                opacity    : alpha,
+            });
+        }
+
+        function get_matl_wireframe( matlColor = 0x00ff00 ){
+            // Get a wireframe material
+            return new THREE.MeshBasicMaterial({
+                color: matlColor,
+                wireframe: true
+            });
+        }
+
+
+
         ////////// BASE CLASSES ////////////////////////////////////////////////////////////////////
+        // Author: James Watson, https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L297
 
         class TriMesh{
             // Basic rigid moving model
-            // https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L297
-            constructor(){
+            constructor( color = 0x00ff00, alpha = 1.0 ){
                 // Geometry //
-                this.V     = []; // Vertices (float)
-                this.F     = []; // Faces
-                this.N     = []; // Normals
-                this.C     = []; // Colors
-                this.vert  = []; // Vertices (Vector3)
-                this.geom  = new THREE.BufferGeometry(); // Three.js model, Pose stored here
-                this.matl  = new THREE.MeshLambertMaterial({ 
-                    color: 0x00ff00,
-                    transparent: true,
-                    opacity: 1.0
-                });
+                this.V    = []; // Vertices (float)
+                this.F    = []; // Faces
+                this.N    = []; // Normals
+                this.C    = []; // Colors
+                this.vert = []; // Vertices (Vector3)
+                this.geom = new THREE.BufferGeometry(); // Three.js model, Pose stored here
+                // Appearance //
+                this.colr = color
+                this.alph = alpha
+                this.matl = get_matl_Lambert_w_alpha( this.colr, this.alph );
+                this.wire = false;
                 this.mesh = null;
+                // Pose //
                 this.position = new THREE.Vector3( 0.0, 0.0, 0.0 );
                 this.rotation = new THREE.Vector3( 0.0, 0.0, 0.0 );
-                // this.RPY      = new THREE.Vector3( 0.0, 0.0, 0.0 );
+            }
+
+
+            copy(){
+                // Return a deep copy of the geometry, NOTE: The mesh copy will NOT be ready to draw!
+                let rtnObj  = new TriMesh( this.colr, this.alph );
+                rtnObj.V    = [...this.V   ]; // create TRUE copy
+                rtnObj.F    = [...this.F   ]; // create TRUE copy
+                rtnObj.N    = [...this.N   ]; // create TRUE copy
+                rtnObj.C    = [...this.C   ]; // create TRUE copy
+                rtnObj.vert = []; 
+                for( let i = 0; i < this.vert.length; i++ ){
+                    let vec_i = this.vert[i];
+                    rtnObj.vert.push( new THREE.Vector3( vec_i.x, vec_i.y, vec_i.z ) )
+                }
+                rtnObj.position.set( this.position.x, this.position.y, this.position.z );
+                rtnObj.rotation.set( this.rotation.x, this.rotation.y, this.rotation.z );
+                if( this.wire ){  rtnObj.set_wireframe();  }
+                return rtnObj;
+            }
+
+
+            copy_from( otherMesh ){
+                // Set geometry to be like `otherMesh`, NOTE: The mesh will NOT be ready to draw!
+                this.V    = [...otherMesh.V   ]; // create TRUE copy
+                this.F    = [...otherMesh.F   ]; // create TRUE copy
+                this.N    = [...otherMesh.N   ]; // create TRUE copy
+                this.C    = [...otherMesh.C   ]; // create TRUE copy
+                this.vert = []; 
+                for( let i = 0; i < otherMesh.vert.length; i++ ){
+                    let vec_i = otherMesh.vert[i];
+                    this.vert.push( new THREE.Vector3( vec_i.x, vec_i.y, vec_i.z ) )
+                }
+                this.mesh = null;
+                this.position.set( otherMesh.position.x, otherMesh.position.y, otherMesh.position.z );
+                this.rotation.set( otherMesh.rotation.x, otherMesh.rotation.y, otherMesh.rotation.z );
+                if( otherMesh.wire ){  this.set_wireframe();  }
+            }
+
+
+            set_wireframe( state = true ){
+                // Set as either wireframe or Lambert
+                this.wire = state;
+                if( this.wire ){
+                    this.matl = get_matl_wireframe( this.colr );
+                }else{
+                    this.matl = get_matl_Lambert_w_alpha( this.colr, this.alph );
+                }
             }
             
 
