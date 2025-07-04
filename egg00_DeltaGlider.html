@@ -37,6 +37,104 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+        ////////// STRUCTS /////////////////////////////////////////////////////////////////////////
+        class Elem{
+            // Basic container for doubly-linked lists
+            constructor( data ){
+                this.data = data;
+                this.prev = null;
+                this.next = null;
+            }
+        }
+
+        class deque{
+            // Double-ended queue with a simple iterator
+            constructor( arrData = null ){
+                // Init struct
+                this.length = 0;
+                this.head   = null;
+                this.tail   = null;
+                this.curr   = null;
+                // Array initializer
+                if( arrData != null ){
+                    let N = arrData.length;
+                    for( let i = 0; i < N; i++ ){
+                        this.push_back( arrData[i] );
+                    }
+                }
+            }
+
+            push_back( datum ){
+                // Add new `Elem` to back
+                let nuElem = new Elem( datum );
+                if( this.length <= 0 ){
+                    this.head = nuElem;
+                    this.tail = nuElem;
+                }else{
+                    this.tail.next = nuElem;
+                    nuElem.prev    = this.tail;
+                    this.tail      = nuElem;
+                }
+                this.length += 1;
+                return nuElem;
+            }
+
+            push_front( datum ){
+                // Add new `Elem` to front
+                let nuElem = new Elem( datum );
+                if( this.length <= 0 ){
+                    this.head = nuElem;
+                    this.tail = nuElem;
+                }else{
+                    this.head.prev = nuElem;
+                    nuElem.next    = this.head;
+                    this.head      = nuElem;
+                }
+                this.length += 1;
+                return nuElem;
+            }
+
+            pop_back(){
+                // Retrieve data from back and drop `Elem`
+                if( this.length > 0 ){
+                    let rtnElem = this.tail;
+                    this.tail   = this.tail.prev;
+                    this.tail.next = null;
+                    this.length -= 1;
+                    return rtnElem.data;
+                }else{  return null;  }
+            }
+
+            pop_front(){
+                // Retrieve data from front and drop `Elem`
+                if( this.length > 0 ){
+                    let rtnElem = this.head;
+                    this.head   = this.head.next;
+                    this.head.prev = null;
+                    this.length -= 1;
+                    return rtnElem.data;
+                }else{  return null;  }
+            }
+
+            get_next(){
+                // Looping iterator with `null` terminator
+                // 0. Check existence
+                if( this.length <= 0  ){  return null;  }
+                // 1. Advance
+                if( this.curr == null ){  
+                    this.curr = this.head;  
+                }else{
+                    this.curr = this.curr.next;
+                }
+                // 2. Return
+                if( this.curr == null ){
+                    return null;
+                }else{
+                    return this.curr.data;
+                }
+            }
+        }
+
         ////////// NUMERIC HELPER FUNCTIONS ////////////////////////////////////////////////////////
 
         function randf( lo, hi ){
@@ -168,9 +266,24 @@
         function get_matl_wireframe( matlColor = 0x00ff00 ){
             // Get a wireframe material
             return new THREE.MeshBasicMaterial({
-                color: matlColor,
+                color    : matlColor,
                 wireframe: true
             });
+        }
+
+        function get_matl_clear(){
+            // Get a wireframe material
+            return new THREE.MeshBasicMaterial({
+                color      : 0xffffff,
+                transparent: true,
+                opacity    : 0.0,
+            });
+        }
+
+        function set_elems( lrgArr, index, smlArr ){
+            stride = smlArr.length;
+            bgnDex = stride * index;
+            for( let i = 0; i < stride; i++ ){  lrgArr[bgnDex+i] = smlArr[i];  }
         }
 
 
@@ -200,13 +313,22 @@
             }
 
 
+            allocate_arrays( Ntri, useColor = false ){
+                this.V = new Array( Ntri * 3 ); // ------------------- Vertices (float)
+                this.F = new Array( Ntri * 3 ); // ------------------- Faces
+                this.N = new Array( Ntri * 3 ); // ------------------- Normals
+                if( useColor ){  this.C = new Array( Ntri * 4 );  } // Colors
+                this.vert = new Array( Ntri ); // -------------------- Vertices (Vector3)
+            }
+
+
             copy(){
                 // Return a deep copy of the geometry, NOTE: The mesh copy will NOT be ready to draw!
                 let rtnObj  = new TriMesh( this.colr, this.alph );
-                rtnObj.V    = [...this.V   ]; // create TRUE copy
-                rtnObj.F    = [...this.F   ]; // create TRUE copy
-                rtnObj.N    = [...this.N   ]; // create TRUE copy
-                rtnObj.C    = [...this.C   ]; // create TRUE copy
+                rtnObj.V    = [...this.V]; // create TRUE copy
+                rtnObj.F    = [...this.F]; // create TRUE copy
+                rtnObj.N    = [...this.N]; // create TRUE copy
+                rtnObj.C    = [...this.C]; // create TRUE copy
                 rtnObj.vert = []; 
                 for( let i = 0; i < this.vert.length; i++ ){
                     let vec_i = this.vert[i];
@@ -221,10 +343,10 @@
 
             copy_from( otherMesh ){
                 // Set geometry to be like `otherMesh`, NOTE: The mesh will NOT be ready to draw!
-                this.V    = [...otherMesh.V   ]; // create TRUE copy
-                this.F    = [...otherMesh.F   ]; // create TRUE copy
-                this.N    = [...otherMesh.N   ]; // create TRUE copy
-                this.C    = [...otherMesh.C   ]; // create TRUE copy
+                this.V    = [...otherMesh.V]; // create TRUE copy
+                this.F    = [...otherMesh.F]; // create TRUE copy
+                this.N    = [...otherMesh.N]; // create TRUE copy
+                this.C    = [...otherMesh.C]; // create TRUE copy
                 this.vert = []; 
                 for( let i = 0; i < otherMesh.vert.length; i++ ){
                     let vec_i = otherMesh.vert[i];
@@ -281,11 +403,15 @@
             }
 
 
-            load_geo(){
+            load_geo( dynamic = false ){
                 // Get the model ready for drawing
                 this.geom.setIndex( this.F );
                 this.geom.setAttribute( 'position', new THREE.Float32BufferAttribute( this.V, 3 ) );
                 this.geom.setAttribute( 'normal'  , new THREE.Float32BufferAttribute( this.N, 3 ) );
+                if( this.C.length > 0 ){
+                    this.geom.setAttribute( 'color'  , new THREE.Float32BufferAttribute( this.C, 4 ) );
+                }
+                this.geom.verticesNeedUpdate = dynamic;
             }
 
 
@@ -437,7 +563,7 @@
             }
         }
 
-        class Icosahedron_r extends TriMesh{
+        class Icosahedron_w extends TriMesh{
             constructor( rad, cntr, active = true ){
                 super();
                 // ~ Constants ~
@@ -445,8 +571,8 @@
                 this.phi    = ( 1.0 + this.sqrt5 ) * 0.5; // ---------------------------------- The Golden Ratio
                 this.ratio  = Math.sqrt( 10.0 + ( 2.0 * this.sqrt5 ) ) / ( 4.0 * this.phi ); // ratio of edge length to radius
                 this.radius = rad;
-                let a /**/ = ( this.radius / this.ratio ) * 0.5;
-                let b /**/ = ( this.radius / this.ratio ) / ( 2.0 * this.phi );
+                let a /*-*/ = ( this.radius / this.ratio ) * 0.5;
+                let b /*-*/ = ( this.radius / this.ratio ) / ( 2.0 * this.phi );
 
                 // ~ Appearance ~
                 this.baseClr = 0x000000; // BLACK;
@@ -553,6 +679,29 @@
                 }
             }
         }
+
+        ////////// SCENE-SPECIFIC CLASSES //////////////////////////////////////////////////////////
+
+        class Plume {
+            // A streaking ribbon with decreasing opacity from head to tail to simulate exhaust
+            // NOTE: This class assumes that backface culling is turned OFF
+            constructor( N, c, Ah, At ){
+                this.Npairs    = N;
+                this.color     = c;
+                this.headAlpha = Ah;
+                this.tailAlpha = At;
+                this.coords    = new deque();
+            }
+
+            
+
+            push_coord_pair( c1, c2 ){
+                // Add coordinates to the head of the plume
+                if( this.coords.length >= this.Npairs ){  this.coords.pop_back(); }// If queue is full, drop the tail element
+                coords.push_front( [c1, c2,] );
+            }
+        }
+
 
         ////////// CLAUDE SLOP /////////////////////////////////////////////////////////////////////
 
