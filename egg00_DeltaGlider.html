@@ -287,10 +287,39 @@
             for( let i = 0; i < stride; i++ ){  lrgArr[bgnDex+i] = smlArr[i];  }
         }
 
+        function set_Vector3( lrgArr, index, vec ){
+            // Set a section of an array as a `THREE.Vector3`
+            set_elems( lrgArr, index, [vec.x, vec.y, vec.z,] )
+        }
 
+        function get_rgb_list( clr ){
+            // Return a list of 3 RGB values on [0,1]
+            let r = 0.0;
+            let g = 0.0;
+            let b = 0.0;
+            if( (typeof clr === "string") && ( clr.includes("0x") ) ){
+                r = parseInt( clr.substring(2,4) , 16) / 255.0;
+                g = parseInt( clr.substring(4,6) , 16) / 255.0;
+                b = parseInt( clr.substring(6,8) , 16) / 255.0;
+            }else if( typeof clr === "number" ){
+                // https://claude.ai/share/510c61bd-2154-44af-9e52-9f6145fb9af5
+                r = ((clr >> 16) & 0xFF) / 255.0;
+                g = ((clr >> 8)  & 0xFF) / 255.0;
+                b = ( clr        & 0xFF) / 255.0;
+            }else if( typeof clr === "object" ){
+                try{
+                    r = clr.r;
+                    g = clr.g;
+                    b = clr.b;
+                }catch( e ){  console.error( "Object was not a THREE.Color!" );  }
+            }
+            return [r, g, b,];
+        }
 
         ////////// BASE CLASSES ////////////////////////////////////////////////////////////////////
         // Author: James Watson, https://github.com/jwatson-CO-edu/nanoverse/blob/d5d6c4c0ef7a5354686afaea3fba74b8e3997e2e/C%2B%2B/Raylib/za_Archive_00-14/rl_toybox.hpp#L297
+
+        
 
         class TriMesh{
             // Basic rigid moving model
@@ -518,7 +547,7 @@
                 this.sweptFrac = 0.75;
                 this.thickFrac = 0.25;
                 
-                console.log( this.wingSpan, this.sweptFrac, 2.0 );
+                // console.log( this.wingSpan, this.sweptFrac, 2.0 );
                 this.load_tri_from_lists( // Left  Front Top
                     [  0.0            ,  0.0                           , 0.0                           + this.wingSpan*this.sweptFrac/2.0 ], // 0, Front
                     [  0.0            , +this.wingSpan*this.thickFrac/2, -this.wingSpan*this.fusFrac/2 + this.wingSpan*this.sweptFrac/2.0 ], //  1, Top peak
@@ -685,15 +714,17 @@
 
         ////////// SCENE-SPECIFIC CLASSES //////////////////////////////////////////////////////////
 
-        class Plume {
+        class Plume extends TriMesh {
             // A streaking ribbon with decreasing opacity from head to tail to simulate exhaust
             // NOTE: This class assumes that backface culling is turned OFF
             constructor( N, c, Ah, At ){
+                super();
                 this.Npairs    = N;
                 this.color     = c;
                 this.headAlpha = Ah;
                 this.tailAlpha = At;
                 this.coords    = new deque();
+                this.allocate_arrays( (this.Npairs-1)*2, true );
             }
 
             push_coord_pair( c1, c2 ){
@@ -704,10 +735,16 @@
 
             rewrite_triangles(){
                 let i /**/ = 0;
+                let k /**/ = 0;
                 let Nsize  = this.coords.length;
                 let pair_1 = this.coords.get_next();
                 let pair_2 = this.coords.get_next();
                 let Aspan  = this.headAlpha - this.tailAlpha;
+                let RGB    = get_rgb_list( this.color );
+                let R /**/ = RGB[0];
+                let G /**/ = RGB[1];
+                let B /**/ = RGB[2];
+
                 while( pair != null ){
                     let c1    = pair_1[0];
                     let c2    = pair_1[1];
@@ -716,10 +753,38 @@
                     let A_i   = tailAlpha + Aspan*(Nsize-(i  ))/(1.0*Nsize);
                     let A_ip1 = tailAlpha + Aspan*(Nsize-(i+1))/(1.0*Nsize);
 
+                    k = i*6;
+
                     if( i%2==0 ){
                         /// Triangle 1: c2, c1, c3 ///
+                        // t1.p1 //
+                        set_elems( this.C, k, [R, G, B, A_i,] );
+                        set_Vector3( this.V, k, c2 );
+                        k++;
+                        // t1.p2 //
+                        set_elems( this.C, k, [R, G, B, A_i,] )
+                        set_Vector3( this.V, k, c1 );
+                        k++;
+                        // t1.p3 //
+                        set_elems( this.C, k, [R, G, B, A_ip1,] )
+                        set_Vector3( this.V, k, c3 );
+                        k++;
+
+                        /// Triangle 2: c3, c4, c2 ///
+                        // t2.p1 //
+                        set_elems( this.C, k, [R, G, B, A_ip1,] )
+                        set_Vector3( this.V, k, c3 );
+                        k++;
+                        // t2.p2 //
+                        set_elems( this.C, k, [R, G, B, A_ip1,] )
+                        set_Vector3( this.V, k, cv );
+                        k++;
+                        // t2.p3 //
+                        set_elems( this.C, k, [R, G, B, A_i,] );
+                        set_Vector3( this.V, k, c2 );
                     }else{
                         /// Triangle 1: c1, c3, c4 ///
+                        // FIXME, START HERE: CROSS THE OTHER DIRECTION
                     }
 
                     i += 1;
